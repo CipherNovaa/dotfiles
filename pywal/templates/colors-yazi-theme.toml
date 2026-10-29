@@ -1,0 +1,17 @@
+[mgr]
+cwd = {{ fg = "{color4}" }}
+
+[status]
+separator_open  = ""
+separator_close = ""
+
+[select]
+active   = {{ fg = "{color4}", bold = true }}
+inactive = {{ fg = "{color15}" }}
+
+[completion]
+active   = {{ fg = "{color4}", bold = true }}
+inactive = {{ fg = "{color15}" }}
+
+[input]
+value = {{ fg = "{color15}" }}

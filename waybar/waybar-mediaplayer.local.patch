@@ -1,0 +1,153 @@
+# Local changes to .config/waybar/waybar-mediaplayer
+# Upstream: https://github.com/GabriWar/waybar-mediaplayer
+# Base commit: 9db912826d5046417be06419cd80d1cc217aff18
+# Restore: clone upstream, checkout base commit, then 'git apply' the diff below.
+# Untracked files present: src/config.json.save 
+# ----------------------------------------------------------------------
+diff --git a/src/config.json b/src/config.json
+index 9a9981b..3b2b704 100755
+--- a/src/config.json
++++ b/src/config.json
+@@ -1,19 +1,19 @@
+ {
+-  "refresh_interval": 500,
+-  "is_notification": true,
++  "refresh_interval": 1,
++  "is_notification": false,
+   "notification_min_interval": 2,
+-  "widget_length": 50,
+-  "sepchar": "",
++  "widget_length": 40,
++  "sepchar": "",
+   "surface_color": "@backgroundlight",
+   "overlay_color": "@backgrounddark",
+   "interval": 1,
+   "text_rot_int": 1000,
+-  "image_signal": 4,
+-  "length_factor": 1,
+-  "player_name": ["spotify", "firefox", "chrome", "chromium", "thorium"],
+-  "convert_to_jpeg": false,
++  "image_signal": 1,
++  "length_factor": 4,
++  "player_name": ["DeaDBeeF", "spotify", "firefox", "chrome", "chromium", "thorium"],
++  "convert_to_jpeg": true,
+   "album_art_placeholder": "no",
+-  "lyrics_providers": ["Lrclib", "Musixmatch", "NetEase", "Megalobiz"],
++  "lyrics_providers": ["Lrclib", "NetEase"],
+   "lyrics_span_before": 2,
+   "lyrics_span_after": 2
+ }
+diff --git a/src/mediaplayer b/src/mediaplayer
+index 9c60445..7283d85 100755
+--- a/src/mediaplayer
++++ b/src/mediaplayer
+@@ -44,8 +44,8 @@ last_rot_time = 0
+ # Whether refresh_interval callback is registered
+ is_refint = False
+ format_class = None
+-icons = {"play": " ", "stop": " "}
+-is_text_rotating = True  # always animate
++icons = {"play": " ", "stop": " "}
++is_text_rotating = False
+ lyrics = dict()
+ 
+ 
+@@ -95,19 +95,39 @@ def get_active_player(manager, requested_players):
+     )
+     if result.returncode == 0:
+         all_players = result.stdout.strip().split('\n')
+-        # Iterate over requested_players to maintain priority order
++        # Iterate over requested_players to maintain priority order.
++        # `playerctl --list-all` returns instance names ("firefox.instance_1_346")
++        # but the GLib PlayerManager and player.props.player_name use the BASE name
++        # ("firefox"). Store the base name (rp) so every later comparison —
++        # init_player's match and the update guards — actually succeeds. Without
++        # this, multi-instance players (browsers) never render their title.
+         for rp in requested_players:
+             for player in all_players:
+-                if player and player.startswith(rp):
+-                    if player not in available_players:
+-                        available_players.append(player)
++                if player and (player == rp or player.startswith(rp + ".")):
++                    if rp not in available_players:
++                        available_players.append(rp)
+ 
+     if not available_players:
+         return None
+ 
++    # A manual selection (from clicking the widget) always wins while it lasts.
+     if selected and selected in available_players:
+         return selected
+ 
++    # Otherwise prefer whichever player is actually Playing, in priority order.
++    # Without this, a running-but-paused high-priority player (e.g. DeaDBeeF,
++    # which launches at startup) would mask the player you're really listening to.
++    for player in available_players:
++        try:
++            st = subprocess.run(
++                ["playerctl", "--player=" + player, "status"],
++                capture_output=True, text=True, timeout=1
++            )
++            if st.returncode == 0 and st.stdout.strip() == "Playing":
++                return player
++        except Exception:
++            pass
++
+     return available_players[0]
+ 
+ 
+@@ -237,7 +257,7 @@ def write_output(text=None, class_=None, tooltip=""):
+     # Default values if not explicitly set
+     if not text:
+         # text = "r" + (" " * (config["widget_length"] - 1))
+-        text = (" " * (config["widget_length"]))
++        text = ""
+     if not class_:
+         class_ = gen_class(0.0)
+     if not tooltip:
+@@ -292,23 +312,14 @@ def gen_widget_text(player):
+         song_info = "AD PLAYING"
+     elif not title.strip() and not (artist or "").strip():
+         # No track info — show the player source name, no scrolling
+-        return icon + player.props.player_name.upper()
++        return icon + (artist.strip() if artist and artist.strip() else "")
+     else:
+         song_info = f"{title.strip()} - {artist.strip()}"
+ 
+     max_text = config["widget_length"] - len(icon)
+-    song_info += " " + config["sepchar"] + " "
+-    elapsed = (time.time() - last_rot_time) * 1000
+-    rot_needs_update = elapsed > config["text_rot_int"]
+-    if rot_needs_update:
+-        to_add = math.floor(elapsed / config["text_rot_int"])
+-        l_rot = (last_rot + to_add) % len(song_info)
+-        last_rot = l_rot
+-        last_rot_time = time.time()
+-    else:
+-        l_rot = last_rot
+-    song_info = rotate_str_left(song_info, l_rot)
+-    text = icon + song_info[:max_text]
++    if len(song_info) > max_text:
++        song_info = song_info[:max_text - 3] + "..."
++    text = icon + song_info
+ 
+     return text
+ 
+@@ -804,9 +815,14 @@ def main():
+         available = []
+         if result.returncode == 0:
+             all_players = result.stdout.strip().split('\n')
+-            for player in all_players:
+-                if player and any(player.startswith(rp) for rp in requested_players):
+-                    available.append(player)
++            # Normalize CLI instance names ("firefox.instance_1_346") to the base
++            # name ("firefox") the manager uses, so selection matches and cycling
++            # works. Preserve requested_players priority order.
++            for rp in requested_players:
++                for player in all_players:
++                    if player and (player == rp or player.startswith(rp + ".")):
++                        if rp not in available:
++                            available.append(rp)
+ 
+         if not available:
+             logger.debug("No media players found")

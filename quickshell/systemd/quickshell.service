@@ -1,0 +1,15 @@
+[Unit]
+Description=Quickshell widget layer (media popup + power menu)
+Documentation=https://quickshell.outfoxxed.me
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=exec
+# -n = refuse to launch a duplicate; systemd owns the lifecycle (no -d daemonize).
+ExecStart=/usr/bin/qs -n
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=graphical-session.target

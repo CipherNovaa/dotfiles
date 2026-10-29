@@ -1,0 +1,240 @@
+[
+  {
+    "output": "DP-3",
+    "layer": "top",
+    "position": "top",
+    "height": 30,
+    "spacing": 0,
+    "exclusive": true,
+    "fixed-center": true,
+
+    "modules-left":   ["hyprland/workspaces"],
+    "modules-center": ["custom/clock"],
+    "modules-right":  [
+      "wireplumber",
+      "temperature",
+      "cpu",
+      "memory",
+      "network",
+      "custom/mediaplayer",
+      "image"
+    ],
+
+    "hyprland/workspaces": {
+      "format": "{icon}",
+      "on-click": "activate",
+      "sort-by-number": true,
+      "all-outputs": false,
+      "format-icons": {
+        "1": "   Terminal",
+        "2": "   Browser",
+        "3": " 󰉋  Files",
+        "4": "4: 󰽉  Aseprite",
+        "5": "5",
+        "6": "6",
+        "7": "7",
+        "8": " 󰓓  Steam",
+        "9": " 󰙯  Discord",
+        "10": " 󰝚  Music",
+        "11": " 󰍹  CRT"
+      }
+    },
+
+    // NOTE: the built-in "clock" module (waybar-git's libdate/ICU backend)
+    // applies standard time, not DST — it showed PST while the system is on
+    // PDT, an hour behind, and setting "timezone" did not fix it. This custom
+    // module shells out to libc `date`, which reads /etc/localtime correctly.
+    "custom/clock": {
+      "interval": 1,
+      "exec": "date '+%I:%M:%S %p'",
+      "format": "{}",
+      "on-click": "qs ipc call main handleCommand toggle calendar ''",
+      "on-click-right": "qs ipc call main handleCommand toggle battery ''",
+      "tooltip": false
+    },
+
+    "memory": {
+      "interval": 2,
+      "format": "  {percentage}%",
+      "tooltip-format": "{used:0.1f}G / {total:0.1f}G",
+      "on-click": "kitty -e btop"
+    },
+
+    "cpu": {
+    "interval": 2,
+    "format": "   {usage}%",
+    "tooltip": true,
+    "tooltip-format": "Core 0: {usage0}%\nCore 1: {usage1}%\nCore 2: {usage2}%\nCore 3: {usage3}%\nCore 4: {usage4}%\nCore 5: {usage5}%\nCore 6: {usage6}%\nCore 7: {usage7}%\nCore 8: {usage8}%\nCore 9: {usage9}%\nCore 10: {usage10}%\nCore 11: {usage11}%\nCore 12: {usage12}%\nCore 13: {usage13}%\nCore 14: {usage14}%\nCore 15: {usage15}%",
+    "on-click": "kitty btop"
+
+    },
+
+    "temperature": {
+      "hwmon-path-abs": "/sys/devices/platform/coretemp.0/hwmon",
+      "input-filename": "temp1_input",
+      "critical-threshold": 85,
+      "format": " {temperatureC}°C",
+      "format-critical": " {temperatureC}°C",
+      "tooltip": false
+    },
+
+    "network": {
+      "interface": "eno2",
+      "interval": 3,
+      "format-ethernet": "󰈀  LAN",
+      "format-disconnected": "󰈂 down",
+      "format-wifi": "󰤨 {essid} {signalStrength}%",
+      "tooltip-format-ethernet": "{ifname}: {ipaddr}",
+      "tooltip-format-disconnected": "Disconnected",
+      "on-click": "qs ipc call main handleCommand toggle network ''",
+      "on-click-right": "kitty --class riptide -e $HOME/.local/bin/riptide"
+    },
+
+    "wireplumber": {
+      "format": "{icon} {volume}%",
+      "format-muted": "󰖁 muted",
+      "format-icons": ["󰕿", "󰖀", "󰕾"],
+      "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+      "on-click-right": "pavucontrol",
+      "on-scroll-up": "$HOME/scripts/bar/vol-up.sh",
+      "on-scroll-down": "$HOME/scripts/bar/vol-down.sh",
+      "tooltip": false
+    },
+
+
+    // Control center (notifications + battery + sliders + power profiles) is now
+    // reached by right-clicking the clock (custom/clock on-click-right); the waybar
+    // cogwheel was removed 2026-07-13.
+
+    "image": {
+      "exec": "echo \"$HOME/.cache/bar_art.jpg\"",
+      "size": 26,
+      "interval": 2,
+      "on-click": "qs ipc call main handleCommand toggle music ''"
+    },
+
+    "custom/mediaplayer": {
+      "exec": "$HOME/.config/waybar/waybar-mediaplayer/src/mediaplayer monitor",
+      "return-type": "json",
+      "restart-interval": 5,
+      "format": "{}",
+      "on-click": "qs ipc call main handleCommand toggle music ''",
+      "on-click-right": "$HOME/.config/waybar/waybar-mediaplayer/src/mediaplayer play-pause",
+      "on-scroll-up": "$HOME/.config/waybar/waybar-mediaplayer/src/mediaplayer next",
+      "on-scroll-down": "$HOME/.config/waybar/waybar-mediaplayer/src/mediaplayer previous",
+      "min-length": 10,
+      "max-length": 40
+    }
+  },
+
+  {
+    "output": "HDMI-A-1",
+    "layer": "top",
+    "position": "top",
+    "height": 28,
+    "spacing": 0,
+    "exclusive": true,
+    "fixed-center": true,
+
+    "modules-left":   ["hyprland/workspaces"],
+    "modules-center": ["custom/clock"],
+    "modules-right":  [
+      "wireplumber",
+      "temperature",
+      "cpu",
+      "memory",
+      "network"
+    ],
+
+    "hyprland/workspaces": {
+      "format": "{icon}",
+      "on-click": "activate",
+      "sort-by-number": true,
+      "all-outputs": false,
+      "format-icons": {
+        "11": "󰊴  Emulator",
+        "12": "󰝚  Media",
+        "13": "󰍹  3",
+        "14": "󰍹  4",
+        "15": "󰍹  5",
+        "16": "󰍹  6",
+        "17": "󰍹  7",
+        "18": "󰍹  8",
+        "19": "󰍹  9",
+        "20": "󰍹  10"
+      }
+    },
+
+    // NOTE: the built-in "clock" module (waybar-git's libdate/ICU backend)
+    // applies standard time, not DST — it showed PST while the system is on
+    // PDT, an hour behind, and setting "timezone" did not fix it. This custom
+    // module shells out to libc `date`, which reads /etc/localtime correctly.
+    "custom/clock": {
+      "interval": 1,
+      "exec": "date '+%I:%M:%S %p'",
+      "format": "{}",
+      "on-click": "qs ipc call main handleCommand toggle calendar ''",
+      "on-click-right": "qs ipc call main handleCommand toggle battery ''",
+      "tooltip": false
+    },
+
+    "memory": {
+      "interval": 2,
+      "format": "  {percentage}%",
+      "tooltip-format": "{used:0.1f}G / {total:0.1f}G",
+      "on-click": "kitty -e btop"
+    },
+
+    "cpu": {
+      "interval": 2,
+      "format": "󰻠  {usage}%",
+      "tooltip": false,
+      "on-click": "kitty -e btop"
+    },
+
+    "temperature": {
+      "hwmon-path-abs": "/sys/devices/platform/coretemp.0/hwmon",
+      "input-filename": "temp1_input",
+      "critical-threshold": 85,
+      "format": " {temperatureC}°C",
+      "format-critical": " {temperatureC}°C",
+      "tooltip": false
+    },
+
+    "network": {
+      "interface": "eno2",
+      "interval": 3,
+      "format-ethernet": "󰈀  LAN",
+      "format-disconnected": "󰈂 down",
+      "format-wifi": "󰤨 {essid} {signalStrength}%",
+      "tooltip-format-ethernet": "{ifname}: {ipaddr}",
+      "tooltip-format-disconnected": "Disconnected",
+      "on-click": "qs ipc call main handleCommand toggle network ''",
+      "on-click-right": "kitty --class riptide -e $HOME/.local/bin/riptide"
+    },
+
+    "wireplumber": {
+      "format": "{icon} {volume}%",
+      "format-muted": "󰖁 muted",
+      "format-icons": ["󰕿", "󰖀", "󰕾"],
+      "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+      "on-click-right": "pavucontrol",
+      "on-scroll-up": "$HOME/scripts/bar/vol-up.sh",
+      "on-scroll-down": "$HOME/scripts/bar/vol-down.sh",
+      "tooltip": false
+    },
+
+    "custom/mediaplayer": {
+      "exec": "$HOME/.config/waybar/waybar-mediaplayer/src/mediaplayer monitor",
+      "return-type": "json",
+      "restart-interval": 5,
+      "format": "{}",
+      "on-click": "$HOME/.config/waybar/waybar-mediaplayer/src/mediaplayer play-pause",
+      "on-click-right": "$HOME/.config/waybar/waybar-mediaplayer/src/mediaplayer select",
+      "on-scroll-up": "$HOME/.config/waybar/waybar-mediaplayer/src/mediaplayer next",
+      "on-scroll-down": "$HOME/.config/waybar/waybar-mediaplayer/src/mediaplayer previous",
+      "min-length": 10,
+      "max-length": 40
+    }
+  }
+]

@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Secrets — the calendar widget reads its OpenWeather key from here
+.env
+!.env.example
+
+# Generated / local state
+*.bak*
+*.log
+*.orig
+*.rej
+
+# Wallpapers are not shipped (bring your own)
+wallpapers/

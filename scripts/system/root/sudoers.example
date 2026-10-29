@@ -1,0 +1,3 @@
+# /etc/sudoers.d/crt-power — let the lock / idle scripts sleep and wake the
+# screens without a password. Install with: sudo visudo -f /etc/sudoers.d/crt-power
+%wheel ALL=(root) NOPASSWD: /usr/local/bin/crt-power off, /usr/local/bin/crt-power on, /usr/local/bin/dp-power off, /usr/local/bin/dp-power on

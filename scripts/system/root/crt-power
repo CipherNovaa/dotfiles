@@ -1,0 +1,13 @@
+#!/bin/bash
+# crt-power {off|on} — force the CRT (HDMI-A-1) DRM connector dis/connected.
+# Routes through aquamarine's clean per-output path so the main monitor (DP-3)
+# is never touched. Must run as root (writes /sys/class/drm/*/status).
+set -u
+nodes=( /sys/class/drm/card*-HDMI-A-1/status )
+node="${nodes[0]}"
+[ -w "$node" ] || { echo "crt-power: $node not writable (need root)" >&2; exit 1; }
+case "${1:-}" in
+    off) printf 'off\n'    > "$node" ;;   # forced disconnect -> tube to standby
+    on)  printf 'detect\n' > "$node" ;;   # re-probe -> reconnect
+    *)   echo "usage: crt-power {off|on}" >&2; exit 2 ;;
+esac

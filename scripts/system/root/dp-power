@@ -1,0 +1,19 @@
+#!/bin/bash
+# dp-power {off|on} — sleep/wake DP-3 (HKC 27E3Q) via the kernel connector
+# force-status trick, the SAME mechanism as /usr/local/bin/crt-power. This is
+# the ONLY route that darkens DP-3 while letting it wake
+# from software: it drops the DP link so the GPU writes DPCD SET_POWER D3 (a
+# light sleep, AUX stays alive), and `echo detect` re-links it. It removes the
+# CMonitor entirely, so aquamarine takes the clean per-output path and NEVER hits
+# the compositor-dpms CRTC-pool crash. Requires root (the status node is
+# root-writable only under atomic KMS).
+#
+# Install:  sudo install -m0755 dp-power /usr/local/bin/dp-power
+# plus the sudoers drop-in in sudoers.example.
+set -u
+node=$(echo /sys/class/drm/card*-DP-3/status)   # card number can vary across boots
+case "${1:-}" in
+    off) echo off    > "$node" ;;   # force-disconnect -> DP link down -> panel sleeps
+    on)  echo detect > "$node" ;;   # re-probe -> re-link -> panel wakes
+    *)   echo "usage: dp-power {off|on}" >&2; exit 1 ;;
+esac

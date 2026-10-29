@@ -1,0 +1,167 @@
+/* ~/.config/waybar/style.css
+   Fully pywal-driven — colors update on wallpaper change */
+
+/* Relative to ~/.config/waybar/ — i.e. ~/.cache/wal/colors-waybar.css (GTK CSS
+   has no ~ expansion). Use an absolute path if you keep this file elsewhere. */
+@import "../../.cache/wal/colors-waybar.css";
+
+* {
+    font-family: "Iosevka Nerd Font", "Noto Serif CJK JP", monospace;
+    font-size: 12px;
+    font-weight: bold;
+    border: none;
+    border-radius: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+}
+
+/* ── Module transitions ───────────────────────────────────────────── */
+#memory,
+#cpu,
+#temperature,
+#network,
+#wireplumber,
+#custom-mediaplayer,
+#custom-clock,
+#custom-controlcenter,
+#image {
+    transition: color 0.2s cubic-bezier(0.23, 1, 0.32, 1),
+                background 0.2s cubic-bezier(0.23, 1, 0.32, 1),
+                padding 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+tooltip,
+tooltip * {
+    all: unset;
+    opacity: 0.99;
+    font-family: "Iosevka Nerd Font", monospace;
+    font-size: 13px;
+    background: @background;
+    color: @color7;
+    border: 1px solid @color3;
+    border-radius: 6px;
+    padding: 6px 10px;
+}
+window#waybar {
+    background: rgba(5, 5, 5, 0.90);
+    color: @color7;
+}
+
+/* ── Workspaces ───────────────────────────────────────────────────── */
+#workspaces {
+    margin: 0;
+    padding: 0 4px;
+}
+
+#workspaces button {
+    padding: 0 8px;
+    color: @color7;
+    background: transparent;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s ease;
+    min-width: 0;
+    font-size: 12px;
+}
+
+#workspaces button:hover {
+    color: @color3;
+    background: rgba(255,255,255,0.08);
+    border-bottom: 2px solid @color3;
+}
+
+#workspaces button.active {
+    color: @color3;
+    background: rgba(255,255,255,0.10);
+    border-bottom: 2px solid @color3;
+}
+
+#workspaces button.urgent {
+    color: @color1;
+    border-bottom: 2px solid @color1;
+}
+
+/* ── Submap ───────────────────────────────────────────────────────── */
+#submap {
+    padding: 0 10px;
+    color: @background;
+    background: @color3;
+    font-weight: bold;
+}
+
+/* ── Center clock ─────────────────────────────────────────────────── */
+#clock,
+#custom-clock {
+    color: @color7;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    padding: 0 8px;
+}
+
+/* ── Right modules base ───────────────────────────────────────────── */
+#memory,
+#cpu,
+#temperature,
+#network,
+#wireplumber,
+#custom-mediaplayer,
+#custom-controlcenter,
+#image {
+    padding: 0 7px;
+    color: @color7;
+}
+
+/* ── keybr WPM (live typing speed) ────────────────────────────────── */
+#custom-keybr-wpm {
+    color: @color3;
+    font-weight: bold;
+}
+#custom-keybr-wpm:hover {
+    color: @color1;
+}
+
+/* ── Module hover effects ─────────────────────────────────────────── */
+#memory:hover,
+#cpu:hover,
+#temperature:hover,
+#network:hover,
+#wireplumber:hover,
+#custom-controlcenter:hover,
+#custom-clock:hover,
+#image:hover {
+    color: @color3;
+}
+
+/* mediaplayer base is already @color3, so it brightens to @color1 on hover */
+#custom-mediaplayer:hover {
+    color: @color1;
+}
+
+/* ── Temperature ──────────────────────────────────────────────────── */
+#temperature.critical {
+    color: @color1;
+}
+
+/* ── Network ──────────────────────────────────────────────────────── */
+#network.disconnected {
+    color: rgba(255,255,255,0.3);
+}
+
+/* ── Volume muted ─────────────────────────────────────────────────── */
+#wireplumber.muted {
+    color: rgba(255,255,255,0.3);
+}
+
+/* ── Player ───────────────────────────────────────────────────────── */
+#custom-mediaplayer {
+    color: @color3;
+    font-style: italic;
+}
+
+/* ── Album art ────────────────────────────────────────────────────── */
+#image {
+    padding: 1px 4px 1px 2px;
+}
+#custom-mediaplayer {
+    padding: 0 10px;
+}

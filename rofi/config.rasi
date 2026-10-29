@@ -1,0 +1,29 @@
+configuration {
+    display-drun: "Applications:";
+    display-window: "Windows:";
+    drun-display-format: "{name}";
+    font: "Iosevka Nerd Font Medium 10";
+}
+
+@import "colors.rasi"
+
+* {
+    border-color: @selected-normal-background;
+}
+
+window {
+    border-radius: 12px;
+    border: 1px;
+}
+
+element {
+    border-radius: 8px;
+}
+
+inputbar {
+    border-radius: 8px;
+}
+
+prompt {
+    color: @selected-normal-background;
+}

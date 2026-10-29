@@ -1,0 +1,16 @@
+[Unit]
+Description=Quickshell focus tracker daemon (per-second active-window usage logging)
+Documentation=https://quickshell.outfoxxed.me
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=exec
+# launch_daemon.sh sources caching.sh (sets QS_STATE_FOCUSTIME) and self-discovers
+# HYPRLAND_INSTANCE_SIGNATURE, so the daemon finds Hyprland's socket on either machine.
+ExecStart=%h/.config/hypr/scripts/quickshell/focustime/launch_daemon.sh
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=graphical-session.target
