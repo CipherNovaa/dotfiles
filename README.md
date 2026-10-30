@@ -94,7 +94,7 @@ The larger CRT projects have their own repos: [mgs4-crt](https://github.com/Ciph
 
 ## Workflow for this project
 
-Most of this system was built and debugged in sessions with Claude Code agents. Specifically:
+Most of this system was built and debugged in sessions with cloud LLM coding agents. Specifically:
 
 - **The CRT sleep bug.** Sleeping the CRT kept crashing the agent's own terminal session. The agent stopped guessing at DPMS syntax and read `hyprland.log`. It found two distinct backend paths (DPMS drops both CRTCs, a connector disconnect drops only one) and moved everything to the sysfs connector path. Experiments with the screens use a self-reverting test (a detached watchdog restores the screen after 8 s) so a bad attempt can't leave the session dark.
 - **Feedback the agent can read.** `keybind_manager.py --conflicts` gives a pass/fail check, so every keybind change ends with the agent proving there are no collisions. For theming, the agent pushes an unmistakable test colour (opaque magenta) and checks a `grim` screenshot. Zen's translucent chrome made subtle colours give false positives.
