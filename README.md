@@ -92,7 +92,7 @@ The larger CRT projects have their own repos: [mgs4-crt](https://github.com/Ciph
 
 <!-- MEDIA: photo of the CRT running Brutal Doom (or Melee) next to the main monitor, plus a screenshot of the Brutal Doom rofi menu. -->
 
-## Built with AI agents
+## Workflow for this Project
 
 Most of this system was built and debugged in sessions with Claude Code agents. Specifically:
 
