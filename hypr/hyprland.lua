@@ -517,7 +517,7 @@ hl.bind(
 
 -- ── Utilities ─────────────────────────────────────────────────────────────────
 hl.bind("+ XF86Calculator", hl.dsp.exec_cmd("qalculate-gtk"))
-hl.bind(mainMod .. " + Home", hl.dsp.exec_cmd(home .. "/scripts/system/wallpaper-picker.sh"))
+hl.bind(mainMod .. " + Home", hl.dsp.exec_cmd(home .. "/scripts/system/wallpicker/launch.sh"))
 hl.bind(mainMod .. " + I", hl.dsp.exec_cmd("python3 " .. home .. "/scripts/keybinds/keybind_manager.py --rofi"))
 
 -- ── Mouse drag / resize ───────────────────────────────────────────────────────
