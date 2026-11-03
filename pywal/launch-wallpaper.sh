@@ -19,6 +19,10 @@ timeout 10 bash -c 'until awww query DP-3 2>/dev/null; do sleep 0.2; done' 2>/de
 awww img "$MAIN_WP" --outputs DP-3 --transition-type none --resize stretch
 awww img "$CRT_WP"  --outputs HDMI-A-1 --transition-type none --resize stretch
 
+# Bring back any live wallpapers on top of their posters (login, leaving gamemode)
+LIVEWALL="${LIVEWALL:-$HOME/.local/bin/livewall}"
+[ -x "$LIVEWALL" ] && "$LIVEWALL" restore >/dev/null 2>&1 &
+
 # Refresh the hyprlock static background to match the restored wallpaper
 ~/scripts/system/update-hyprlock-bg.sh &
 

@@ -161,6 +161,55 @@ get_thumb() {
   echo "$THUMB_DIR/$(basename "${1%.*}").png"
 }
 
+# ── Overlay backend (wallpicker/shell.qml) ────────────────────────────────────
+# Internal panel and external display each remember their own wallpaper, in the same
+# two files launch-wallpaper.sh restores from.
+cache_for() {
+  case "$1" in
+    eDP-*|LVDS-*|DSI-*) echo "$CACHE_MAIN" ;;
+    *) echo "$HOME/.cache/wal/current-crt" ;;
+  esac
+}
+# --list: name, path, thumbnail, type and size, one tab-separated line per wallpaper.
+if [[ "${1:-}" == "--list" ]]; then
+  for f in "$WALLPAPER_DIR"/*.{gif,png,jpg,jpeg,webp,webm}; do
+    [[ -f "$f" ]] || continue
+    name=$(basename "$f")
+    if [[ -f "$f.live" ]]; then type=live
+    elif [[ "$f" == *.gif || "$f" == *.webm ]]; then type=gif
+    else type=still
+    fi
+    printf '%s\t%s\t%s\t%s\t%s\n' "$name" "$f" "$(get_thumb "$f")" "$type" "$(stat -c %s "$f")"
+  done
+  exit 0
+fi
+# --current: what each connected output shows now.
+if [[ "${1:-}" == "--current" ]]; then
+  for o in $(awww query 2>/dev/null | sed -n 's/^[: ]*\([A-Za-z0-9-]\+\):.*/\1/p'); do
+    wp=$(cat "$(cache_for "$o")" 2>/dev/null)
+    [[ -n "$wp" ]] || wp=$(cat "$CACHE_MAIN" 2>/dev/null)
+    printf 'output\t%s\t%s\n' "$o" "$wp"
+  done
+  exit 0
+fi
+# --apply OUTPUT,OUTPUT FILE [--no-recolor]: paint the chosen outputs, then recolour.
+if [[ "${1:-}" == "--apply" ]]; then
+  file="${3:-}"
+  [[ -f "$file" ]] || exit 1
+  LIVEWALL="${LIVEWALL:-$HOME/.local/bin/livewall}"
+  IFS=, read -ra chosen_outputs <<<"${2:-}"
+  for o in "${chosen_outputs[@]}"; do
+    [[ "$o" == none || -z "$o" ]] && continue
+    awww img "$file" --outputs "$o" --transition-type grow --transition-pos center --transition-duration 1 --resize stretch
+    echo "$file" >"$(cache_for "$o")"
+    # Image with a .live sidecar: live version on top of it. Any other image: live off.
+    [ -x "$LIVEWALL" ] && "$LIVEWALL" apply "$o" "$file" >/dev/null 2>&1 &
+    case "$o" in eDP-*|LVDS-*|DSI-*) ~/scripts/system/update-hyprlock-bg.sh & ;; esac
+  done
+  [[ "${4:-}" == "--no-recolor" ]] || apply_colors_from "$(get_thumb "$file")"
+  exit 0
+fi
+
 # ── Step 1: Pick wallpaper ────────────────────────────────────────────────────
 entries=()
 for f in "$WALLPAPER_DIR"/*.{gif,png,jpg,jpeg,webp,webm}; do

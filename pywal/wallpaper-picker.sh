@@ -6,6 +6,7 @@ THUMB_DIR="$HOME/.cache/wallpaper-thumbs"
 CACHE_MAIN="$HOME/.cache/wal/current-main"
 CACHE_CRT="$HOME/.cache/wal/current-crt"
 CACHE_SD="$HOME/.cache/wal/current-streamdeck"
+LIVEWALL="${LIVEWALL:-$HOME/.local/bin/livewall}"  # optional live wallpaper tool, see the README
 
 mkdir -p "$THUMB_DIR"
 mkdir -p "$(dirname "$CACHE_MAIN")"
@@ -80,6 +81,8 @@ launch_streamdeck() {
 launch_main() {
   awww img "$1" --outputs DP-3 --transition-type grow --transition-pos center --transition-duration 1 --resize stretch
   echo "$1" >"$CACHE_MAIN"
+  # Image with a .live sidecar: live version on top of it. Any other image: live off.
+  [ -x "$LIVEWALL" ] && "$LIVEWALL" apply DP-3 "$1" >/dev/null 2>&1 &
   ~/scripts/system/update-hyprlock-bg.sh &
   # NOTE: stream deck is intentionally NOT mirrored here — it stays isolated to
   # the explicit "Stream Deck" menu option only.
@@ -88,6 +91,7 @@ launch_main() {
 launch_crt() {
   awww img "$1" --outputs HDMI-A-1 --transition-type grow --transition-pos center --transition-duration 1 --resize stretch
   echo "$1" >"$CACHE_CRT"
+  [ -x "$LIVEWALL" ] && "$LIVEWALL" apply HDMI-A-1 "$1" >/dev/null 2>&1 &
 }
 
 apply_colors_from() {
@@ -172,6 +176,39 @@ apply_colors_from() {
 get_thumb() {
   echo "$THUMB_DIR/$(basename "${1%.*}").png"
 }
+
+# ── Overlay backend (wallpicker/shell.qml) ────────────────────────────────────
+# --list: name, path, thumbnail, type and size, one tab-separated line per wallpaper.
+if [[ "${1:-}" == "--list" ]]; then
+  for f in "$WALLPAPER_DIR"/*.{gif,png,jpg,jpeg,webp,webm}; do
+    [[ -f "$f" ]] || continue
+    name=$(basename "$f")
+    if [[ -f "$f.live" ]]; then type=live
+    elif [[ "$f" == *.gif || "$f" == *.webm ]]; then type=gif
+    else type=still
+    fi
+    printf '%s\t%s\t%s\t%s\t%s\n' "$name" "$f" "$(get_thumb "$f")" "$type" "$(stat -c %s "$f")"
+  done
+  exit 0
+fi
+# --current: what each output shows now, and whether this machine has a Stream Deck.
+if [[ "${1:-}" == "--current" ]]; then
+  printf 'output\tDP-3\t%s\n' "$(cat "$CACHE_MAIN" 2>/dev/null)"
+  printf 'output\tHDMI-A-1\t%s\n' "$(cat "$CACHE_CRT" 2>/dev/null)"
+  [ -x "$SD_PY" ] && printf 'deck\t1\n'
+  exit 0
+fi
+# --apply OUTPUT,OUTPUT,deck FILE [--no-recolor]: the same work as the menus below.
+if [[ "${1:-}" == "--apply" ]]; then
+  targets=",${2:-},"
+  file="${3:-}"
+  [[ -f "$file" ]] || exit 1
+  [[ "$targets" == *,DP-3,* ]] && launch_main "$file"
+  [[ "$targets" == *,HDMI-A-1,* ]] && launch_crt "$file"
+  [[ "$targets" == *,deck,* ]] && launch_streamdeck "$file"
+  [[ "${4:-}" == "--no-recolor" ]] || apply_colors_from "$(get_thumb "$file")"
+  exit 0
+fi
 
 # ── Step 1: Pick wallpaper ────────────────────────────────────────────────────
 entries=()

@@ -31,6 +31,9 @@ enable_gamemode() {
     pkill -x openrgb           2>/dev/null
     pkill -x nm-applet         2>/dev/null
     pkill -x awww-daemon       2>/dev/null   # wallpaper daemon (kills the wallpaper)
+    # Live wallpapers: frees their RAM and VRAM. launch-wallpaper.sh restores them on the way out.
+    LIVEWALL="${LIVEWALL:-$HOME/.local/bin/livewall}"
+    [ -x "$LIVEWALL" ] && timeout 5 "$LIVEWALL" stop >/dev/null 2>&1
 
     # ── Compositor eye-candy off ───────────────────────────────────────────────
     # `hyprctl keyword` is dead on the Lua build — set options with hl.config via eval.

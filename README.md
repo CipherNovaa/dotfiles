@@ -8,7 +8,7 @@ An Arch (CachyOS) + Hyprland desktop that runs as one system: pick a wallpaper a
 
 ## What it does
 
-- **One wallpaper themes everything.** `SUPER+Home` opens a rofi thumbnail grid. Pick an image and a screen (main, CRT, both, colours only, or the Stream Deck), and pywal's palette is pushed into Hyprland borders, waybar, rofi, kitty, Neovim, yazi, btop, Starship, GTK, Qt/KDE, Obsidian, Discord, Spotify, Zen/Firefox, Godot, Blender, DeaDBeeF, hyprlock, the motherboard/RAM/AIO RGB, and a Stream Deck that shows the wallpaper across its keys.
+- **One wallpaper themes everything.** `SUPER+Home` opens a Quickshell picker with a large preview and your real screen layout. Pick an image and any mix of screens, the Stream Deck, or colours only, and pywal's palette is pushed into Hyprland borders, waybar, rofi, kitty, Neovim, yazi, btop, Starship, GTK, Qt/KDE, Obsidian, Discord, Spotify, Zen/Firefox, Godot, Blender, DeaDBeeF, hyprlock, the motherboard/RAM/AIO RGB, and a Stream Deck that shows the wallpaper across its keys.
 - **Hyprland in Lua.** Uses the Lua config format: two monitors, a 10-workspace pool for each screen (`SUPER+1..0` for the main monitor, `SUPER+ALT+1..0` and the numpad for the CRT), per-app workspace and monitor rules, and games pinned to the right screen when their window opens.
 - **Quickshell widgets** (about 10k lines of QML): a vinyl-style media popup, a music player with a 10-band EQ, a calendar with weather where clicking any day opens that day's Obsidian daily note, a focus-time tracker that logs active-window time to SQLite, a control center (notifications, sliders, power profiles, lock/suspend/reboot), a Wi-Fi/Ethernet/Bluetooth manager, notification toasts, and a volume OSD.
 - **Waybar** on both screens, with click-throughs into the widgets and album art.
@@ -22,11 +22,11 @@ An Arch (CachyOS) + Hyprland desktop that runs as one system: pick a wallpaper a
 
 ### The pywal fan-out
 
-`pywal/wallpaper-picker.sh` is the hub. It paints the image with `awww`, runs `wal` on a thumbnail, then calls one small adapter per app. Each adapter reads `~/.cache/wal/colors.json` and writes that app's own format.
+`pywal/wallpaper-picker.sh` is the hub, with `pywal/wallpicker/` as its front end. It paints the image with `awww`, runs `wal` on a thumbnail, then calls one small adapter per app. Each adapter reads `~/.cache/wal/colors.json` and writes that app's own format.
 
 ```mermaid
 flowchart LR
-    P["wallpaper-picker.sh<br/>(rofi grid)"] --> A["awww<br/>paint DP-3 / CRT"]
+    P["wallpaper-picker.sh<br/>(Quickshell overlay or rofi)"] --> A["awww<br/>paint DP-3 / CRT"]
     P --> W["wal -i thumb<br/>colors.json"]
     P --> SD["streamdeck-wallpaper.py<br/>image across the keys"]
     W --> T["~/.config/wal/templates<br/>rofi, yazi, vim, Firefox CSS"]
@@ -92,6 +92,17 @@ The larger CRT projects have their own repos: [mgs4-crt](https://github.com/Ciph
 
 <!-- MEDIA: photo of the CRT running Brutal Doom (or Melee) next to the main monitor, plus a screenshot of the Brutal Doom rofi menu. -->
 
+### The wallpaper picker
+
+`pywal/wallpicker/shell.qml` is a Quickshell overlay that only runs while it's open, so it costs nothing the rest of the time. The work stays in the picker scripts, which gain three modes: `--list`, `--current` and `--apply OUTPUTS FILE [--no-recolor]`. Running the script with no arguments still opens the old rofi menu, and both share one apply path.
+
+- **Screens come from Hyprland at runtime,** so the same overlay runs on the desktop and the laptop, and a newly connected display should appear as another target.
+- **Recolouring is a checkbox,** so a wallpaper can change without retheming the system.
+- **Keys:** `H J K L` or arrows move, `Enter` applies, `Tab` filters, `/` searches, `1`-`9` toggle screens, `C` toggles recolouring, `D` toggles the Stream Deck, and `Esc` closes.
+- **Font:** the labels ask for a font family called `MGS1 Codec`, which isn't included here. Change `font.family` in `shell.qml` to use your own.
+
+**Live wallpapers are an optional hook.** An image with a `IMAGE.live` file beside it is tagged LIVE. The scripts then call whatever executable `$LIVEWALL` points to (default `~/.local/bin/livewall`) with `apply OUTPUT IMAGE`, `stop` and `restore`, and skip the calls if it isn't there. The tool I use isn't published here.
+
 ## Workflow for this project
 
 Most of this system was built and debugged in sessions with cloud LLM coding agents. Specifically:
@@ -124,6 +135,7 @@ ln -s $D/pywal/templates ~/.config/wal/templates
 # scripts
 mkdir -p ~/scripts/{system,bar,keybinds,media,gaming}
 ln -s $D/pywal/*.sh $D/pywal/zen-pywal* $D/pywal/update-discord-system24.py $D/pywal/streamdeck-wallpaper.py ~/scripts/system/
+ln -s $D/pywal/wallpicker ~/scripts/system/wallpicker
 install -m755 $D/pywal/wal-server.py ~/.local/bin/wal-server
 ln -s $D/scripts/system/*.sh $D/scripts/system/*.py ~/scripts/system/
 for d in bar keybinds media; do ln -s $D/scripts/$d/* ~/scripts/$d/; done
